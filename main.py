@@ -23,16 +23,20 @@ credentials_dict= {
 client = storage.Client.from_service_account_info(credentials_dict)
 def upload_image_to_gcs():
     """ Uploads images to google cloud which are uploaded by frontend """
-    filename = filedialog.askopenfilename()  # Opens file dialog to select the image file
-    if filename:
-        # Create a blob object
-        blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(os.path.basename(filename))
-        # Upload the image
-        blob.upload_from_filename(filename)
-        # blob = bucket.blob(os.path.basename(filename))  # Use the file name as the blob name
-        # blob.upload_from_filename(filename)
-        print(f'{filename} uploaded to Google Cloud Storage to {GOOGLE_CLOUD_BUCKET_NAME}')
-
+    try:
+        filename = filedialog.askopenfilename()  # Opens file dialog to select the image file
+        if filename:
+            file_basename = os.path.basename(filename)
+            # Create a blob object
+            blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(file_basename)
+            # Upload the image
+            blob.upload_from_filename(filename)
+            print(f'{filename} uploaded to Google Cloud Storage to {GOOGLE_CLOUD_BUCKET_NAME}')
+            # Display a success message
+            tk.messagebox.showinfo("Success", f"{file_basename} uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
+    except Exception as e:
+        print(e)
+        tk.messagebox.showerror("ERROR", f"Upload failure check logs: {e}")
 
 def initialize_ui():
     # Create the tkinter window
