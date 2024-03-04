@@ -38,7 +38,7 @@ def upload_image_to_gcs():
         print(e)
         tk.messagebox.showerror("ERROR", f"Upload failure check logs: {e}")
 
-def initialize_ui():
+def initialize_ui(closing_message = ""):
     # Create the tkinter window
     window = tk.Tk()
     window.title("Image Upload to Google Cloud Storage")
@@ -49,6 +49,7 @@ def initialize_ui():
 
     # Run the tkinter main loop
     window.mainloop()
+    return closing_message
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
