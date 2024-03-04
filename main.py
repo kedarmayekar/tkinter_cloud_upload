@@ -1,57 +1,20 @@
-import tkinter as tk
-from tkinter import filedialog
-from google.cloud import storage
+from flask import Flask, request
+from flask_cors import CORS
 import os
-from dotenv import load_dotenv
-load_dotenv()
+from upload_app import initialize_ui
+app = Flask(__name__)
+CORS(app)
+@app.route('/', methods=['GET'])
+def home():
+    return "status ok \n <a href='/upload'>Upload</a>"
 
-GOOGLE_CLOUD_BUCKET_NAME = os.environ['GOOGLE_CLOUD_BUCKET_NAME']
-credentials_dict= {
-            "type": os.environ['GCP_type'],
-            "project_id": os.environ['GCP_project_id'],
-            "private_key_id": os.environ['GCP_private_key_id'],
-            "private_key": os.environ['GCP_private_key'],
-            "client_email": os.environ['GCP_client_email'],
-            "client_id": os.environ['GCP_client_id'],
-            "auth_uri": os.environ['GCP_auth_uri'],
-            "token_uri": os.environ['GCP_token_uri'],
-            "auth_provider_x509_cert_url": os.environ['GCP_auth_provider_x509_cert_url'],
-            "client_x509_cert_url": os.environ['GCP_client_x509_cert_url'],
-            "universe_domain": os.environ['GCP_universe_domain']
-            }
-# Define your credentials (replace with your own)
-client = storage.Client.from_service_account_info(credentials_dict)
-def upload_image_to_gcs():
-    """ Uploads images to google cloud which are uploaded by frontend """
-    try:
-        filename = filedialog.askopenfilename()  # Opens file dialog to select the image file
-        if filename:
-            file_basename = os.path.basename(filename)
-            # Create a blob object
-            blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(file_basename)
-            # Upload the image
-            blob.upload_from_filename(filename)
-            print(f'{filename} uploaded to Google Cloud Storage to {GOOGLE_CLOUD_BUCKET_NAME}')
-            # Display a success message
-            tk.messagebox.showinfo("Success", f"{file_basename} uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
-    except Exception as e:
-        print(e)
-        tk.messagebox.showerror("ERROR", f"Upload failure check logs: {e}")
+@app.route('/upload', methods=['GET'])
+def upload():
+    return initialize_ui(closing_message="application closed \n To retry click below link \n <a href='/upload'>Upload</a>")
 
-def initialize_ui(closing_message = ""):
-    # Create the tkinter window
-    window = tk.Tk()
-    window.title("Image Upload to Google Cloud Storage")
+@app.errorhandler(404)
+def page_not_found():
+    return "page not found", 404
 
-    # Create a button to upload the image
-    upload_button = tk.Button(window, text="Upload Image to GCS", command=upload_image_to_gcs)
-    upload_button.pack(pady=20)
-
-    # Run the tkinter main loop
-    window.mainloop()
-    return closing_message
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    initialize_ui()
-
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
